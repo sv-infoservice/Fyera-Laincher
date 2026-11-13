@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Инструкция по установке Fyera launcher</title>
+
+    <!-- GSAP для сверхплавных анимаций -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+    <style>
+        @font-face {
+            font-family: 'MinecraftTen';
+            src: url('Minecraft-Tenv2.ttf') format('truetype'),
+                 url('MinecraftTen.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+            font-display: swap;
+        }
+
+        :root {
+            /* Цветовая палитра */
+            --sky-1: #1e78ff;
+            --sky-2: #4aa0ff;
+            --sky-3: #82c6ff;
+            --sky-4: #d8f1ff;
+
+            --navy-dark: #091e47;
+            --navy-mid: #12377a;
+            --blue-main: #1b6ef3;
+            --blue-hover: #2f80ff;
+            --blue-bevel: #7cc0ff;
+            --blue-shadow: #0b3d91;
+
+            --ice-white: #ffffff;
+            --ice-soft: #f0f8ff;
+            --ice-border: #bce0ff;
+            --ice-shadow: #8bbef0;
+            --accent-rgba: rgba(27, 110, 243, 0.28);
+
+            --danger: #e13b3b;
+            --danger-bevel: #ff8585;
+
+            --butter: cubic-bezier(0.16, 1, 0.3, 1);
+            --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--navy-dark);
+            overflow-x: hidden;
+            background-color: var(--sky-4);
+        }
+
+        .mc-font {
+            font-family: 'MinecraftTen', 'Montserrat', sans-serif;
+            letter-spacing: 0.9px;
+            font-weight: normal;
+        }
+
+        /* --- ФОН С ПЕРЕЛИВОМ, СФЕРАМИ И СНЕГОМ --- */
+        .bg-fixed {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            background: linear-gradient(155deg, var(--sky-1) 0%, var(--sky-2) 38%, var(--sky-3) 72%, var(--sky-4) 100%);
+            background-size: 200% 200%;
+            animation: skyShimmer 14s ease-in-out infinite alternate;
+            overflow: hidden;
+        }
+
+        @keyframes skyShimmer {
+            0% { background-position: 0% 0%; }
+            50% { background-position: 60% 40%; }
+            100% { background-position: 100% 100%; }
+        }
+
+        /* Декоративные размытые светящиеся сферы для "наполненности" */
+        .ambient-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.5;
+            z-index: 0;
+            animation: orbFloat 12s ease-in-out infinite alternate;
+        }
+        .orb-1 {
+            width: 400px; height: 400px;
+            background: #ffffff;
+            top: 10%; left: -100px;
+        }
+        .orb-2 {
+            width: 500px; height: 500px;
+            background: var(--blue-main);
+            bottom: 20%; right: -150px;
+            animation-delay: -6s;
+        }
+
+        @keyframes orbFloat {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(40px, -60px) scale(1.1); }
+        }
+
+        #snow-canvas {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* --- КОНТЕЙНЕР --- */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 70px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 56px; /* Увеличено расстояние между карточками */
+            position: relative;
+            z-index: 10;
+        }
+
+        /* --- ЛОГОТИП --- */
+        .logo-header {
+            display: flex;
+            justify-content: center;
+            margin-bottom: -10px;
+        }
+        .logo-img {
+            max-width: 380px; /* Сделал логотип заметно крупнее */
+            width: 100%;
+            height: auto;
+            object-fit: contain;
+            filter: drop-shadow(0 15px 30px rgba(9, 30, 71, 0.25));
+            animation: logoFloat 6s ease-in-out infinite;
+        }
+        @keyframes logoFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+        }
+
+        /* --- КАРТОЧКИ С ЭФФЕКТОМ МАТОВОГО СТЕКЛА (GLASSMORPHISM) --- */
+        .step-card {
+            background: rgba(255, 255, 255, 0.78);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 2px solid rgba(255, 255, 255, 0.95);
+            border-radius: 28px;
+            padding: 38px 42px;
+            box-shadow:
+                0 16px 40px rgba(9, 30, 71, 0.08),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            transition: transform 0.4s var(--butter), box-shadow 0.4s var(--butter), background 0.4s var(--butter);
+            will-change: transform, opacity;
+        }
+
+        .step-card:hover {
+            background: rgba(255, 255, 255, 0.9);
+            transform: translateY(-6px);
+            box-shadow:
+                0 24px 50px rgba(9, 30, 71, 0.15),
+                0 12px 0 var(--ice-shadow),
+                inset 0 0 0 1px #ffffff;
+        }
+
+        /* --- ЗАГОЛОВКИ И БЕЙДЖИ --- */
+        .main-title {
+            text-align: center;
+            font-size: 34px;
+            color: var(--navy-dark);
+            text-shadow: 0 4px 12px rgba(255, 255, 255, 0.8);
+            margin-bottom: 4px;
+        }
+
+        .step-badge {
+            display: inline-flex;
+            align-items: center;
+            align-self: flex-start;
+            background: linear-gradient(135deg, var(--blue-main), var(--sky-1));
+            color: #ffffff;
+            padding: 8px 18px;
+            border-radius: 14px;
+            font-size: 21px;
+            box-shadow: 0 6px 16px var(--accent-rgba), inset 0 2px 0 rgba(255, 255, 255, 0.3);
+            border: 2px solid var(--blue-shadow);
+        }
+
+        .step-text {
+            font-size: 16px;
+            color: var(--navy-mid);
+            line-height: 1.65;
+            font-weight: 700;
+        }
+        .step-text b {
+            color: var(--navy-dark);
+            font-weight: 900;
+        }
+
+        /* Внимание / Предупреждение */
+        .warning-box {
+            background: rgba(240, 248, 255, 0.8);
+            border: 2px solid var(--danger-bevel);
+            border-left: 6px solid var(--danger);
+            padding: 20px;
+            border-radius: 16px;
+            color: var(--navy-dark);
+            font-size: 15px;
+            font-weight: 700;
+            line-height: 1.6;
+            margin: 10px 0;
+            box-shadow: 0 8px 24px rgba(225, 59, 59, 0.1);
+        }
+
+        /* Скриншоты */
+        .screenshot {
+            max-width: 100%;
+            border-radius: 18px;
+            border: 3px solid #ffffff;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+            margin: 12px 0;
+            transition: transform 0.4s var(--butter), box-shadow 0.4s var(--butter);
+        }
+        .screenshot:hover {
+            transform: scale(1.025) translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        /* --- КНОПКИ --- */
+        .mc-btn {
+            background-color: var(--blue-main);
+            color: #ffffff;
+            border: 2px solid var(--blue-shadow);
+            border-top: 2px solid var(--blue-bevel);
+            border-left: 2px solid var(--blue-bevel);
+            padding: 16px 32px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 900;
+            font-size: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            box-shadow: 0 5px 0 var(--blue-shadow), 0 12px 24px var(--accent-rgba);
+            transition: transform 0.3s var(--spring), box-shadow 0.3s var(--butter), background-color 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            text-decoration: none;
+            text-align: center;
+            border-radius: 16px;
+            align-self: flex-start;
+        }
+
+        .mc-btn:hover {
+            background-color: var(--blue-hover);
+            transform: translateY(-4px);
+            box-shadow: 0 14px 28px var(--accent-rgba), 0 7px 0 var(--blue-shadow);
+        }
+
+        .mc-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 var(--blue-shadow);
+            transition-duration: 0.1s;
+        }
+
+        .mc-btn.white {
+            background-color: rgba(255, 255, 255, 0.95);
+            color: var(--navy-dark);
+            border: 2px solid var(--ice-shadow);
+            border-top: 2px solid #ffffff;
+            border-left: 2px solid #ffffff;
+            box-shadow: 0 5px 0 var(--ice-shadow), 0 8px 16px rgba(0, 0, 0, 0.08);
+        }
+
+        .mc-btn.white:hover {
+            background-color: #ffffff;
+            color: var(--blue-main);
+            box-shadow: 0 14px 24px rgba(0, 0, 0, 0.12), 0 7px 0 var(--ice-shadow);
+        }
+
+        /* Соцсети */
+        .social-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            width: 100%;
+            margin-top: 14px;
+        }
+
+        .social-btn {
+            width: 100%;
+            font-size: 14px;
+        }
+
+        .social-icon {
+            color: var(--blue-main);
+            transition: color 0.4s var(--butter), transform 0.3s var(--spring);
+        }
+
+        .social-btn:hover .social-icon {
+            transform: scale(1.18) rotate(-6deg);
+        }
+
+        /* --- ФУТЕР --- */
+        .footer {
+            text-align: center;
+            padding: 40px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            color: var(--navy-dark);
+            font-weight: 700;
+            font-size: 13px;
+        }
+        .footer .logo-img {
+            max-width: 150px;
+            animation: none;
+            filter: drop-shadow(0 6px 12px rgba(0,0,0,0.15));
+        }
+
+        /* Адаптив */
+        @media (max-width: 650px) {
+            .step-card {
+                padding: 26px 22px;
+            }
+            .social-row {
+                grid-template-columns: 1fr;
+            }
+            .mc-btn {
+                width: 100%;
+            }
+            .main-title {
+                font-size: 26px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-fixed">
+        <div class="ambient-orb orb-1"></div>
+        <div class="ambient-orb orb-2"></div>
+        <canvas id="snow-canvas"></canvas>
+    </div>
+
+    <div class="container">
+        <!-- Логотип -->
+        <div class="logo-header">
+            <img src="fyera.png" alt="FYERA Launcher" class="logo-img">
+        </div>
+
+        <!-- Введение -->
+        <div class="step-card anim-card">
+            <h1 class="main-title mc-font">Инструкция по установке Fyera launcher</h1>
+            <p class="step-text" style="text-align: center; font-size: 18px;">
+                <b>Fyera launcher</b> — это официальный клиент-лаунчер сервера <b>Friends'SMP</b>.
+            </p>
+        </div>
+
+        <!-- Шаг 1 -->
+        <div class="step-card anim-card">
+            <div class="step-badge mc-font">ШАГ 1</div>
+            <p class="step-text">Скачайте .exe файл лаунчера, нажав на кнопку ниже.<br>
+            Если вы уже скачали .exe файл, то переходите к шагу 2.</p>
+            <a href="https://drive.google.com/file/d/1M0oGgswpKNAUe_Oa6Br2Ww3HAr2CGGGA/view" target="_blank" class="mc-btn">
+                Скачать установщик
+            </a>
+        </div>
+
+        <!-- Шаг 2 -->
+        <div class="step-card anim-card">
+            <div class="step-badge mc-font">ШАГ 2</div>
+            <p class="step-text">Откройте скаченный .exe файл, кликнув по нему 2 раза.<br>
+            После открытия появится окошко установки лаунчера.<br>
+            Поставьте галочку на <b>«Создать значок на рабочем столе»</b>, если она не поставлена, а затем нажмите <b>«Далее»</b> и подождите установку лаунчера 1-2 минуты.</p>
+
+            <img src="dow.png" alt="Окно установки" class="screenshot">
+
+            <div class="warning-box">
+                <b>Внимание!</b> При открытии установщика лаунчера может появится окошко Microsoft Defender SmartScreen о том, что данное приложение может навредить вашему ПК. Это окошко появляется со всеми новыми программами.<br><br>
+                Чтобы продолжить установку, нажмите на <b>«Подробнее»</b>, после этого появится кнопочка <b>«Выполнить в любом случае»</b> — нажмите на неё и продолжайте установку.
+            </div>
+
+            <img src="df.png" alt="SmartScreen Warning" class="screenshot">
+        </div>
+
+        <!-- Шаг 3 -->
+        <div class="step-card anim-card">
+            <div class="step-badge mc-font">ШАГ 3</div>
+            <p class="step-text">После установки лаунчер должен сам открыться. Если лаунчер не открылся сам, то откройте его вручную, а затем приступайте к шагу 4.</p>
+        </div>
+
+        <!-- Шаг 4 -->
+        <div class="step-card anim-card">
+            <div class="step-badge mc-font">ШАГ 4</div>
+            <p class="step-text">Введите свой никнейм, поставьте галочки на нужные функции (например: поддержка скинов ТЛаунчера, поддержка шейдеров, или войс чат) и нажмите на кнопку <b>«ИГРАТЬ»</b>.<br>
+            Затем подождите 5 минут, пока первый раз скачаются файлы Minecraft и наша сборка модов.</p>
+            <img src="lch.png" alt="Вход в лаунчер" class="screenshot">
+        </div>
+
+        <!-- Шаг 5 -->
+        <div class="step-card anim-card">
+            <div class="step-badge mc-font">ШАГ 5</div>
+            <p class="step-text">После загрузки всех нужных файлов откроется игра.<br>
+            <b style="font-size: 18px; color: var(--blue-main);">Установка успешно завершена! 🎉</b><br><br>
+            Скопируйте айпи адрес сервера из лаунчера, и вам останется только зайти на сервер!<br>
+            Приятной игры на <b>Friends'SMP</b>! :)</p>
+
+            <hr style="border: none; border-top: 2px dashed var(--ice-border); margin: 10px 0;">
+
+            <p class="step-text" style="text-align: center;">
+                Вступайте в наши соц.сети, чтобы познакомиться с комьюнити и следить за последними новостями сервера!
+            </p>
+
+            <div class="social-row">
+                <a href="https://t.me/friendssmpnews" target="_blank" class="mc-btn white social-btn">
+                    <svg class="social-icon" width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+                    </svg>
+                    Telegram
+                </a>
+                <a href="https://discord.gg/PFJF8Xj6ht" target="_blank" class="mc-btn white social-btn">
+                    <svg class="social-icon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/>
+                    </svg>
+                    Discord
+                </a>
+            </div>
+        </div>
+
+        <!-- Футер -->
+        <div class="footer anim-card">
+            <img src="fyera.png" alt="FYERA" class="logo-img">
+            <div>
+                2026 Fyera launcher & Friends'SMP ™<br>
+                Все права защищены.
+            </div>
+        </div>
+    </div>
+
+    <!-- Скрипты анимаций -->
+    <script>
+        // Анимация снега на весь экран
+        (function initSnowParticles() {
+            const canvas = document.getElementById('snow-canvas');
+            const ctx = canvas.getContext('2d');
+            const flakes = [];
+            const COUNT = 70; // Чуть больше частиц
+
+            function resizeCanvas() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
+
+            for (let i = 0; i < COUNT; i++) {
+                flakes.push({
+                    x: Math.random() * window.innerWidth,
+                    y: Math.random() * window.innerHeight,
+                    r: Math.random() * 2.8 + 1.2,
+                    vy: Math.random() * 0.55 + 0.25,
+                    vx: Math.random() * 0.35 - 0.17,
+                    phase: Math.random() * Math.PI * 2,
+                    alpha: Math.random() * 0.55 + 0.3
+                });
+            }
+
+            function renderSnow() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                for (let i = 0; i < COUNT; i++) {
+                    const f = flakes[i];
+                    f.phase += 0.015;
+                    f.y += f.vy;
+                    f.x += f.vx + Math.sin(f.phase) * 0.25;
+
+                    if (f.y > canvas.height + 8) { f.y = -8; f.x = Math.random() * canvas.width; }
+                    if (f.x > canvas.width + 8) { f.x = -8; }
+                    if (f.x < -8) { f.x = canvas.width + 8; }
+
+                    ctx.beginPath();
+                    ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255, 255, 255, ${f.alpha})`;
+                    ctx.fill();
+                }
+                requestAnimationFrame(renderSnow);
+            }
+            requestAnimationFrame(renderSnow);
+        })();
+
+        // GSAP Сверхплавные анимации при скролле
+        document.addEventListener("DOMContentLoaded", () => {
+            gsap.registerPlugin(ScrollTrigger);
+
+            // Находим все карточки
+            const cards = gsap.utils.toArray('.anim-card');
+
+            cards.forEach((card) => {
+                // Плавное выплывание снизу.
+                // Используем gsap.from(), чтобы не конфликтовать со стартовым CSS.
+                gsap.from(card, {
+                    scrollTrigger: {
+                        trigger: card,
+                        start: "top 88%", // Анимация стартует, когда карточка появляется снизу
+                        toggleActions: "play none none none"
+                    },
+                    y: 60,
+                    opacity: 0,
+                    duration: 1.2,
+                    ease: "power3.out",
+                    clearProps: "all" // Очищаем стили GSAP после завершения для правильной работы hover
+                });
+            });
+        });
+    </script>
+</body>
+</html>
